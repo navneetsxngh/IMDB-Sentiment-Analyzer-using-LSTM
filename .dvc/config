@@ -1,0 +1,5 @@
+[core]
+    remote = origin
+[remote "origin"]
+    url = https://dagshub.com/navneetsxngh/IMDB-Sentiment-Analyzer-using-LSTM.dvc
+    auth = basic

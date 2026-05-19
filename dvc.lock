@@ -1,0 +1,160 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python src/stages/stage_01_data_ingestion.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 5b7da271a4a2bc1ce099ab3f83175a9c
+      size: 1344
+    - path: src/IMDBSentimentAnalysis/components/dataingestion.py
+      hash: md5
+      md5: c8a7670a8543ea70cefebd95b5df2a88
+      size: 3234
+    - path: src/IMDBSentimentAnalysis/config/configuration.py
+      hash: md5
+      md5: 3a180fe5e5a8feb64e861d479b97a485
+      size: 3372
+    - path: src/stages/stage_01_data_ingestion.py
+      hash: md5
+      md5: 48bb21efaf27540162a724b13cc84054
+      size: 523
+    outs:
+    - path: artifacts/data_ingestion/IMDB Dataset.csv
+      hash: md5
+      md5: 308443a50e5c993e7b8a1cdb95750026
+      size: 66212309
+  data_transformation:
+    cmd: python src/stages/stage_02_data_transformation.py
+    deps:
+    - path: artifacts/data_ingestion/IMDB Dataset.csv
+      hash: md5
+      md5: 308443a50e5c993e7b8a1cdb95750026
+      size: 66212309
+    - path: config/config.yaml
+      hash: md5
+      md5: 5b7da271a4a2bc1ce099ab3f83175a9c
+      size: 1344
+    - path: src/IMDBSentimentAnalysis/components/datatransformation.py
+      hash: md5
+      md5: 2a0587b7957b80f5cfcdfa08694299ed
+      size: 6564
+    - path: src/IMDBSentimentAnalysis/config/configuration.py
+      hash: md5
+      md5: 3a180fe5e5a8feb64e861d479b97a485
+      size: 3372
+    - path: src/stages/stage_02_data_transformation.py
+      hash: md5
+      md5: 3bcdebd60069b3cbbf1e5d175c0f35d8
+      size: 507
+    params:
+      params.yaml:
+        max_len: 200
+        max_words: 10000
+        random_state: 42
+        test_size: 0.2
+    outs:
+    - path: artifacts/data_transformation/test.npz
+      hash: md5
+      md5: 315733c4cd36c738278036de5664f7bf
+      size: 8080490
+    - path: artifacts/data_transformation/tokenizer.pkl
+      hash: md5
+      md5: 1488acedecfd9688ab62a1bbc072fd08
+      size: 8627526
+    - path: artifacts/data_transformation/train.npz
+      hash: md5
+      md5: bb4dae14739c01a40104f9d3b493b34e
+      size: 32320490
+  model_trainer:
+    cmd: python src/stages/stage_03_model_trainer.py
+    deps:
+    - path: artifacts/data_transformation/test.npz
+      hash: md5
+      md5: 315733c4cd36c738278036de5664f7bf
+      size: 8080490
+    - path: artifacts/data_transformation/train.npz
+      hash: md5
+      md5: bb4dae14739c01a40104f9d3b493b34e
+      size: 32320490
+    - path: config/config.yaml
+      hash: md5
+      md5: 5b7da271a4a2bc1ce099ab3f83175a9c
+      size: 1344
+    - path: src/IMDBSentimentAnalysis/components/ModelTrainer.py
+      hash: md5
+      md5: c0de0a193c1d1d4481a71e5380a03d73
+      size: 9367
+    - path: src/IMDBSentimentAnalysis/config/configuration.py
+      hash: md5
+      md5: 3a180fe5e5a8feb64e861d479b97a485
+      size: 3372
+    - path: src/stages/stage_03_model_trainer.py
+      hash: md5
+      md5: 89554430f42a56dcd8f43a2a42099b26
+      size: 483
+    params:
+      params.yaml:
+        batch_size: 64
+        dropout_rate: 0.5
+        embedding_dim: 128
+        epochs: 5
+        learning_rate: 0.001
+        lstm_units: 64
+    outs:
+    - path: artifacts/model_trainer/history.pkl
+      hash: md5
+      md5: 5ad8241c41b17c2b9226cf96b29d4492
+      size: 321
+    - path: artifacts/model_trainer/model.h5
+      hash: md5
+      md5: a78e3f1cee8f9c2d4a91fcac243d99f4
+      size: 17161288
+  model_evaluation:
+    cmd: python src/stages/stage_04_model_evaluation.py
+    deps:
+    - path: artifacts/data_transformation/test.npz
+      hash: md5
+      md5: 315733c4cd36c738278036de5664f7bf
+      size: 8080490
+    - path: artifacts/model_trainer/history.pkl
+      hash: md5
+      md5: 5ad8241c41b17c2b9226cf96b29d4492
+      size: 321
+    - path: artifacts/model_trainer/model.h5
+      hash: md5
+      md5: a78e3f1cee8f9c2d4a91fcac243d99f4
+      size: 17161288
+    - path: config/config.yaml
+      hash: md5
+      md5: 5b7da271a4a2bc1ce099ab3f83175a9c
+      size: 1344
+    - path: src/IMDBSentimentAnalysis/components/ModelEvaluation.py
+      hash: md5
+      md5: 0ddcba58253873b8b85138e61d43380d
+      size: 9102
+    - path: src/IMDBSentimentAnalysis/config/configuration.py
+      hash: md5
+      md5: 3a180fe5e5a8feb64e861d479b97a485
+      size: 3372
+    - path: src/stages/stage_04_model_evaluation.py
+      hash: md5
+      md5: 59234f85babd465437d24f552af9e020
+      size: 495
+    outs:
+    - path: artifacts/model_evaluation/accuracy_plot.png
+      hash: md5
+      md5: 71baf28ca20eeaa7ae476c1ac6ff002f
+      size: 63636
+    - path: artifacts/model_evaluation/confusion_matrix.png
+      hash: md5
+      md5: 11d24270d74343917c019165531f412e
+      size: 42237
+    - path: artifacts/model_evaluation/loss_plot.png
+      hash: md5
+      md5: ac410730ec5872c0b2963a7ce2e22cb9
+      size: 60765
+    - path: artifacts/model_evaluation/report.json
+      hash: md5
+      md5: b6cb9798bced64be03f0b41182f27456
+      size: 101

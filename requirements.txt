@@ -1,7 +1,7 @@
 numpy
 scikit-learn
 pandas
-tensorflow
+tensorflow==2.21.0
 fastapi
 uvicorn
 ipykernel

@@ -3,9 +3,9 @@ import pickle
 import numpy as np
 import logging
 
-from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+from src.IMDBSentimentAnalysis.utils.main import load_keras_model
 from src.IMDBSentimentAnalysis.entity.config_entity import DataTransformationConfig, ModelTrainerConfig, Params
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class PredictionPipeline:
     # ── Step 1: Load Model ────────────────────────────────────────
     def load_model(self):
         try:
-            self.model = load_model(self.trainer_config.model_path)
+            self.model = load_keras_model(self.trainer_config.model_path)
             logger.info(f"Model loaded      : {self.trainer_config.model_path}")
 
         except Exception as e:

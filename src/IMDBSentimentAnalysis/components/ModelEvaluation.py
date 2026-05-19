@@ -18,7 +18,7 @@ from sklearn.metrics import (
     recall_score
 )
 
-from tensorflow.keras.models import load_model
+from src.IMDBSentimentAnalysis.utils.main import load_keras_model
 from src.IMDBSentimentAnalysis.entity.config_entity import ModelEvaluationConfig
 
 load_dotenv()
@@ -33,7 +33,7 @@ class ModelEvaluation:
     # ── Step 1: Load Model ────────────────────────────────────────
     def load_model(self):
         try:
-            model = load_model(self.config.model_path)
+            model = load_keras_model(self.config.model_path)
             logger.info(f" Model loaded      : {self.config.model_path}")
             return model
 

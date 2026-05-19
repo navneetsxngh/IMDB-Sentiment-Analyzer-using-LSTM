@@ -9,6 +9,24 @@ from pathlib import Path
 from typing import Any
 from box.exceptions import BoxValueError
 
+import tensorflow as tf
+from tensorflow.keras.layers import Embedding
+from tensorflow.keras.models import load_model as _keras_load_model
+
+
+# Strips 'quantization_config' so models saved with TF 2.14+ load on any version
+class _CompatEmbedding(Embedding):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop('quantization_config', None)
+        super().__init__(*args, **kwargs)
+
+
+def load_keras_model(path):
+    return _keras_load_model(
+        str(path),
+        custom_objects={'Embedding': _CompatEmbedding}
+    )
+
 
 @ensure_annotations
 def read_yaml(path: Path) -> ConfigBox:

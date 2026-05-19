@@ -1,0 +1,194 @@
+/* ============================================================
+   CineAI — Animations & Keyframes
+   ============================================================ */
+
+/* ── Keyframes ───────────────────────────────────────────── */
+@keyframes fadeIn  { from{opacity:0}          to{opacity:1} }
+@keyframes fadeOut { from{opacity:1}          to{opacity:0} }
+@keyframes fadeUp  { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeDown{ from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)} }
+@keyframes fadeLeft{ from{opacity:0;transform:translateX(24px)} to{opacity:1;transform:translateX(0)} }
+@keyframes fadeRight{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)} }
+@keyframes scaleIn { from{opacity:0;transform:scale(.88)}  to{opacity:1;transform:scale(1)} }
+
+@keyframes float {
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-18px)}
+}
+
+@keyframes pulse {
+    0%,100%{opacity:1}
+    50%{opacity:.45}
+}
+
+@keyframes spin {
+    to{transform:rotate(360deg)}
+}
+
+@keyframes bounce {
+    0%,80%,100%{transform:translateY(0)}
+    40%{transform:translateY(-9px)}
+}
+
+@keyframes ping {
+    75%,100%{transform:scale(1.9);opacity:0}
+}
+
+@keyframes shimmer {
+    0%{background-position:-1000px 0}
+    100%{background-position:1000px 0}
+}
+
+@keyframes scanline {
+    0%{transform:translateY(-100vh)}
+    100%{transform:translateY(200vh)}
+}
+
+@keyframes toastIn {
+    from{opacity:0;transform:translateX(40px) scale(.95)}
+    to{opacity:1;transform:translateX(0) scale(1)}
+}
+
+@keyframes toastOut {
+    from{opacity:1;transform:translateX(0)}
+    to{opacity:0;transform:translateX(50px)}
+}
+
+@keyframes resultIn {
+    from{opacity:0;transform:scale(.92) translateY(16px)}
+    to{opacity:1;transform:scale(1) translateY(0)}
+}
+
+@keyframes glowPulse {
+    0%,100%{box-shadow:0 0 20px rgba(245,197,24,.2)}
+    50%{box-shadow:0 0 40px rgba(245,197,24,.5),0 0 80px rgba(245,197,24,.18)}
+}
+
+@keyframes glowPulseGreen {
+    0%,100%{box-shadow:0 0 20px rgba(16,185,129,.2)}
+    50%{box-shadow:0 0 40px rgba(16,185,129,.45)}
+}
+
+@keyframes gradientShift {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+}
+
+@keyframes nodeFlow {
+    0%,100%{opacity:.4}
+    50%{opacity:1}
+}
+
+@keyframes countUp {
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
+/* ── Animation utility classes ───────────────────────────── */
+.anim-fade-in   { animation: fadeIn   .5s ease both }
+.anim-fade-up   { animation: fadeUp   .6s ease both }
+.anim-fade-down { animation: fadeDown .5s ease both }
+.anim-scale-in  { animation: scaleIn  .4s ease both }
+.anim-float     { animation: float 6s ease-in-out infinite }
+.anim-pulse     { animation: pulse 2.5s ease-in-out infinite }
+.anim-spin      { animation: spin .85s linear infinite }
+.anim-glow      { animation: glowPulse 2.5s ease-in-out infinite }
+.anim-glow-green{ animation: glowPulseGreen 2.5s ease-in-out infinite }
+
+/* Delay utilities */
+.delay-1 { animation-delay:.1s }
+.delay-2 { animation-delay:.2s }
+.delay-3 { animation-delay:.3s }
+.delay-4 { animation-delay:.4s }
+.delay-5 { animation-delay:.5s }
+.delay-6 { animation-delay:.6s }
+
+/* AOS overrides for dark theme */
+[data-aos]{transition-property:opacity,transform}
+
+/* ── Interactive glow on hover ───────────────────────────── */
+.glow-on-hover {
+    transition: box-shadow .3s ease, transform .3s ease;
+}
+.glow-on-hover:hover {
+    box-shadow: 0 0 28px rgba(245,197,24,.25);
+    transform: translateY(-3px);
+}
+
+/* ── Gradient animated border ────────────────────────────── */
+.grad-border {
+    position: relative;
+    background: var(--bg-card);
+    border-radius: var(--r-xl);
+}
+.grad-border::before {
+    content: '';
+    position: absolute;
+    inset: -1.5px;
+    border-radius: inherit;
+    background: linear-gradient(135deg,#f5c518,#8b5cf6,#3b82f6,#f5c518);
+    background-size: 300% 300%;
+    animation: gradientShift 4s ease infinite;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity .35s;
+}
+.grad-border:hover::before { opacity: 1 }
+
+/* ── Ripple button effect ────────────────────────────────── */
+.btn-ripple {
+    position: relative;
+    overflow: hidden;
+}
+.btn-ripple .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    transform: scale(0);
+    animation: rippleAnim .6s linear;
+    pointer-events: none;
+}
+@keyframes rippleAnim {
+    to { transform: scale(4); opacity: 0 }
+}
+
+/* ── Neural network node pulse ───────────────────────────── */
+.arch-node-active .arch-node-ico {
+    animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* ── Typewriter cursor ───────────────────────────────────── */
+.typewriter::after {
+    content: '|';
+    color: var(--yellow);
+    animation: pulse 1s step-end infinite;
+    margin-left: 2px;
+}
+
+/* ── Scroll reveal utility ───────────────────────────────── */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity .7s ease, transform .7s ease;
+}
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── Loading bar ─────────────────────────────────────────── */
+.loading-bar {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--yellow), var(--purple), var(--blue), transparent);
+    background-size: 200% 100%;
+    animation: gradientShift 1.5s linear infinite;
+}
+
+/* ── Star rating (for fun) ───────────────────────────────── */
+@keyframes starPop {
+    0% { transform: scale(0) rotate(-30deg); opacity: 0 }
+    70%{ transform: scale(1.2) rotate(5deg); opacity: 1 }
+    100%{ transform: scale(1) rotate(0); opacity: 1 }
+}
+.star-animate { animation: starPop .5s cubic-bezier(0.34,1.56,0.64,1) both }

@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="CineAI — AI-powered IMDB movie review sentiment analysis using Bidirectional LSTM deep learning"/>
+    <meta name="theme-color" content="#07070f"/>
+    <title>CineAI — AI Movie Sentiment Analyzer</title>
+
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>"/>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+    <!-- AOS -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"/>
+
+    <!-- Shared stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/animations.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/responsive.css') }}"/>
+
+    <style>
+        /* ── Landing-specific styles ──────────────────────────── */
+
+        /* Nav override for landing */
+        .landing-nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 66px; z-index: 1000;
+            display: flex; align-items: center;
+            padding: 0 24px;
+            background: rgba(7,7,15,.82);
+            backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+            border-bottom: 1px solid var(--border);
+            transition: var(--trans);
+        }
+        .landing-nav.scrolled { background: rgba(7,7,15,.97); border-bottom-color: var(--border-bright); box-shadow: 0 4px 32px rgba(0,0,0,.55) }
+        .landing-nav-inner { max-width: 1240px; margin: 0 auto; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px }
+        .lnav-links { display: flex; align-items: center; gap: 2px; list-style: none }
+        .lnav-link { color: var(--text-2); font-size: 14px; font-weight: 500; padding: 6px 14px; border-radius: var(--r-sm); transition: var(--trans-f); text-decoration: none }
+        .lnav-link:hover { color: var(--yellow); background: var(--yellow-glow) }
+        .launch-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 8px 18px; border-radius: var(--r-xl);
+            background: var(--yellow); color: #000;
+            font-size: 13px; font-weight: 700;
+            text-decoration: none; transition: var(--trans);
+            box-shadow: var(--shadow-y);
+        }
+        .launch-btn:hover { background: var(--yellow-dark); box-shadow: var(--shadow-y-lg); transform: translateY(-1px) }
+        .lnav-right { display: flex; align-items: center; gap: 10px }
+
+        /* Hero */
+        .lhero {
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center; padding: 80px 24px;
+            position: relative; overflow: hidden;
+        }
+        .lhero-bg {
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 70% 60% at 50% -10%, rgba(139,92,246,.18) 0%, transparent 62%),
+                radial-gradient(ellipse 50% 40% at 90% 80%, rgba(245,197,24,.08) 0%, transparent 55%),
+                radial-gradient(ellipse 40% 35% at 10% 90%, rgba(59,130,246,.08) 0%, transparent 55%);
+        }
+        .lhero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 18px;
+            background: rgba(139,92,246,.1);
+            border: 1px solid rgba(139,92,246,.22);
+            border-radius: var(--r-full);
+            font-size: 12px; font-weight: 600; color: var(--purple);
+            letter-spacing: .3px; margin-bottom: 28px;
+            animation: fadeDown .8s ease both;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); animation: ping 2s infinite }
+        .lhero-title {
+            font-size: clamp(42px, 9vw, 96px);
+            font-weight: 900; letter-spacing: -4px; line-height: 1.02;
+            margin-bottom: 24px;
+            animation: fadeUp .8s .1s ease both;
+        }
+        .lhero-title .word-ai {
+            background: linear-gradient(135deg, #f5c518 0%, #a78bfa 45%, #60a5fa 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .lhero-sub {
+            font-size: clamp(16px, 2.5vw, 20px);
+            color: var(--text-2); max-width: 580px; margin: 0 auto 40px;
+            line-height: 1.8; animation: fadeUp .8s .2s ease both;
+        }
+        .lhero-cta {
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+            justify-content: center; margin-bottom: 80px;
+            animation: fadeUp .8s .3s ease both;
+        }
+        .lhero-scroll {
+            position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            color: var(--text-3); font-size: 11px; letter-spacing: .6px; text-transform: uppercase;
+            animation: fadeIn 1s 1.2s ease both;
+        }
+        .scroll-arrow { width: 20px; height: 20px; border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3); transform: rotate(45deg); animation: bounce 2s infinite }
+
+        /* Film strip decoration */
+        .film-strip {
+            position: absolute; top: 15%; right: -60px;
+            display: flex; flex-direction: column; gap: 3px;
+            opacity: .06; transform: rotate(12deg);
+            animation: float 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .film-frame { width: 80px; height: 60px; border: 2px solid #fff; border-radius: 3px; background: rgba(255,255,255,.05) }
+
+        /* Section wrapper */
+        .lsection { padding: 100px 24px; max-width: 1240px; margin: 0 auto }
+        .lsection-full { padding: 100px 24px; position: relative }
+
+        /* Features */
+        .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px }
+        .feat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--r-2xl); padding: 32px;
+            position: relative; overflow: hidden;
+            transition: var(--trans); cursor: default;
+        }
+        .feat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: var(--feat-color, var(--yellow)); opacity: 0; transition: var(--trans);
+        }
+        .feat-card:hover { border-color: var(--feat-color, var(--yellow)); transform: translateY(-4px); box-shadow: var(--shadow-hover) }
+        .feat-card:hover::before { opacity: 1 }
+        .feat-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,.025) 0%, transparent 55%); pointer-events: none; border-radius: inherit }
+        .feat-icon-wrap {
+            width: 52px; height: 52px; border-radius: var(--r-lg);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-bottom: 18px;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+        }
+        .feat-title { font-size: 18px; font-weight: 700; color: var(--text-1); margin-bottom: 10px }
+        .feat-desc { font-size: 14px; color: var(--text-2); line-height: 1.7 }
+        .feat-tag {
+            display: inline-block; margin-top: 14px;
+            font-size: 11px; font-weight: 600; padding: 3px 10px;
+            border-radius: var(--r-full); background: var(--yellow-glow);
+            color: var(--yellow); border: 1px solid rgba(245,197,24,.18);
+        }
+
+        /* Steps */
+        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; position: relative }
+        .steps-grid::before {
+            content: ''; position: absolute; top: 36px; left: 15%; right: 15%;
+            height: 1px; background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+        }
+        .step-card { text-align: center; padding: 24px 20px; position: relative }
+        .step-num {
+            width: 56px; height: 56px; border-radius: 50%;
+            border: 1.5px solid var(--border-bright);
+            background: var(--bg-card);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; color: var(--yellow);
+            margin: 0 auto 18px;
+            position: relative; z-index: 1;
+        }
+        .step-title { font-size: 16px; font-weight: 700; color: var(--text-1); margin-bottom: 10px }
+        .step-desc { font-size: 13px; color: var(--text-2); line-height: 1.65 }
+
+        /* Metrics showcase */
+        .metrics-showcase { background: var(--bg-secondary); border-radius: var(--r-2xl); padding: 48px }
+        .metrics-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center }
+        .metrics-text .big-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 14px }
+        .metrics-text h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -1.2px; margin-bottom: 16px; line-height: 1.2 }
+        .metrics-text p { font-size: 15px; color: var(--text-2); line-height: 1.75; margin-bottom: 24px }
+        .metrics-bars { display: flex; flex-direction: column; gap: 18px }
+        .mbar-row { display: flex; align-items: center; gap: 14px }
+        .mbar-label { font-size: 13px; font-weight: 600; color: var(--text-2); min-width: 72px }
+        .mbar-track { flex: 1; height: 6px; background: var(--border); border-radius: var(--r-full); overflow: hidden }
+        .mbar-fill { height: 100%; border-radius: var(--r-full); width: 0; transition: width 1.5s cubic-bezier(0.4,0,0.2,1) }
+        .mbar-val { font-size: 13px; font-weight: 700; font-family: var(--mono); min-width: 52px; text-align: right }
+
+        /* Tech stack */
+        .tech-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center }
+        .tech-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 18px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            font-size: 13px; font-weight: 600; color: var(--text-2);
+            transition: var(--trans);
+        }
+        .tech-badge:hover { border-color: var(--border-bright); color: var(--text-1); transform: translateY(-2px) }
+        .tech-badge span { font-size: 18px }
+
+        /* CTA banner */
+        .cta-banner {
+            background: linear-gradient(135deg, rgba(139,92,246,.12) 0%, rgba(59,130,246,.08) 50%, rgba(245,197,24,.08) 100%);
+            border: 1px solid var(--border-bright);
+            border-radius: var(--r-2xl);
+            padding: 64px 48px;
+            text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .cta-banner::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--purple), var(--yellow), var(--blue), transparent);
+        }
+        .cta-banner h2 { font-size: clamp(28px, 5vw, 48px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 16px }
+        .cta-banner p { font-size: 16px; color: var(--text-2); max-width: 480px; margin: 0 auto 36px; line-height: 1.7 }
+        .cta-btns { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap }
+
+        /* Live demo pill */
+        .demo-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.25);
+            border-radius: var(--r-full); font-size: 12px; font-weight: 600; color: var(--positive);
+            margin-bottom: 32px; animation: fadeUp .8s .4s ease both;
+        }
+        .demo-live { width: 6px; height: 6px; border-radius: 50%; background: var(--positive); animation: ping 2s infinite }
+
+        /* API preview card */
+        .api-preview {
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: var(--r-xl); padding: 20px 24px;
+            font-family: var(--mono); font-size: 12px; line-height: 1.8;
+            text-align: left; max-width: 460px; margin: 0 auto;
+        }
+        .api-method { color: #60a5fa; font-weight: 700 }
+        .api-url { color: var(--yellow) }
+        .api-key { color: #a78bfa }
+        .api-str { color: #34d399 }
+        .api-num { color: #fb923c }
+        .api-comment { color: var(--text-3) }
+
+        /* Stats counter row */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 }
+        .stat-cell {
+            padding: 36px 24px; text-align: center;
+            border-right: 1px solid var(--border);
+        }
+        .stat-cell:last-child { border-right: none }
+        .stat-num { font-size: 44px; font-weight: 900; letter-spacing: -2px; line-height: 1 }
+        .stat-unit { font-size: 14px; color: var(--text-3); margin-top: 6px }
+
+        /* Responsive landing */
+        @media (max-width: 900px) {
+            .features-grid { grid-template-columns: 1fr }
+            .steps-grid { grid-template-columns: 1fr }
+            .steps-grid::before { display: none }
+            .metrics-inner { grid-template-columns: 1fr; gap: 32px }
+            .stats-row { grid-template-columns: repeat(2, 1fr) }
+            .stat-cell { border-right: none; border-bottom: 1px solid var(--border) }
+            .stat-cell:nth-child(odd) { border-right: 1px solid var(--border) }
+            .lhero-title { letter-spacing: -2.5px }
+            .cta-banner { padding: 40px 24px }
+            .lnav-links { display: none }
+        }
+        @media (max-width: 600px) {
+            .lhero-title { letter-spacing: -1.5px }
+            .metrics-showcase { padding: 28px 20px }
+            .stats-row { grid-template-columns: 1fr 1fr }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Particle canvas ────────────────────────────────────── -->
+<canvas id="particleCanvas" aria-hidden="true"></canvas>
+<div class="scanline" aria-hidden="true"></div>
+<div id="toast-container" role="alert" aria-live="polite"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     LANDING NAVBAR
+═══════════════════════════════════════════════════════════ -->
+<nav class="landing-nav" id="landingNav" role="navigation" aria-label="Main navigation">
+    <div class="landing-nav-inner">
+        <a href="/" class="nav-logo" aria-label="CineAI Home">
+            <span class="logo-icon" aria-hidden="true">🎬</span>
+            Cine<span class="logo-accent">AI</span>
+        </a>
+
+        <ul class="lnav-links" role="list">
+            <li><a href="#features"    class="lnav-link">Features</a></li>
+            <li><a href="#how-it-works"class="lnav-link">How It Works</a></li>
+            <li><a href="#performance" class="lnav-link">Performance</a></li>
+            <li><a href="#stack"       class="lnav-link">Tech Stack</a></li>
+            <li><a href="/docs" target="_blank" rel="noopener" class="lnav-link">API Docs ↗</a></li>
+        </ul>
+
+        <div class="lnav-right">
+            <div class="health-pill" id="navHealth" aria-live="polite">
+                <span class="health-dot" aria-hidden="true"></span>
+                <span class="health-text" id="navHealthText">Checking…</span>
+            </div>
+            <a href="/ui" class="launch-btn" aria-label="Launch the CineAI app">
+                Launch App <span aria-hidden="true">→</span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<main>
+<!-- ════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════ -->
+<section id="home" class="lhero" aria-label="Hero">
+    <div class="lhero-bg" aria-hidden="true"></div>
+
+    <!-- Decorative film strip -->
+    <div class="film-strip" aria-hidden="true">
+        <div class="film-frame"></div><div class="film-frame"></div>
+        <div class="film-frame"></div><div class="film-frame"></div>
+        <div class="film-frame"></div><div class="film-frame"></div>
+    </div>
+
+    <div class="lhero-badge">
+        <span class="badge-dot" aria-hidden="true"></span>
+        Bi-LSTM · Trained on 50K IMDB Reviews
+    </div>
+
+    <h1 class="lhero-title">
+        <span>AI Movie</span><br/>
+        <span class="word-ai">Sentiment Analyzer</span>
+    </h1>
+
+    <p class="lhero-sub">
+        Instantly classify movie reviews as Positive or Negative using a
+        deep learning Bidirectional LSTM model. Real-time inference, batch processing,
+        and full analytics — all in one place.
+    </p>
+
+    <!-- Live demo pill -->
+    <div class="demo-pill" role="status" aria-live="polite" id="heroPill">
+        <span class="demo-live" aria-hidden="true"></span>
+        API is live · localhost:8080
+    </div>
+
+    <div class="lhero-cta">
+        <a href="/ui" class="btn btn-primary btn-lg btn-ripple" aria-label="Open the prediction dashboard">
+            <span aria-hidden="true">🚀</span> Try It Now
+        </a>
+        <a href="/ui/batch" class="btn btn-secondary btn-lg" aria-label="Open batch prediction">
+            <span aria-hidden="true">📊</span> Batch Predict
+        </a>
+        <a href="/docs" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">
+            API Docs ↗
+        </a>
+    </div>
+
+    <!-- API preview snippet -->
+    <div class="api-preview" aria-label="API usage example" data-aos="fade-up" data-aos-delay="200">
+        <div><span class="api-comment"># POST /predict</span></div>
+        <div><span class="api-key">"review"</span><span style="color:var(--text-3)">: </span><span class="api-str">"This movie was absolutely breathtaking!"</span></div>
+        <div style="margin-top:10px"><span class="api-comment"># Response</span></div>
+        <div><span class="api-key">"sentiment"</span><span style="color:var(--text-3)">: </span><span class="api-str">"Positive 😊"</span></div>
+        <div><span class="api-key">"confidence"</span><span style="color:var(--text-3)">: </span><span class="api-num">97.43</span></div>
+        <div><span class="api-key">"probability"</span><span style="color:var(--text-3)">: </span><span class="api-num">0.9743</span></div>
+    </div>
+
+    <div class="lhero-scroll" aria-hidden="true">
+        <span>Scroll to explore</span>
+        <div class="scroll-arrow"></div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     STATS STRIP
+═══════════════════════════════════════════════════════════ -->
+<div style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="stats-row" role="list" aria-label="Key statistics">
+        <div class="stat-cell" data-aos="fade-up" data-aos-delay="0" role="listitem">
+            <div class="stat-num grad-yellow" data-count-landing="86.93">0</div>
+            <div class="stat-unit">% Accuracy</div>
+        </div>
+        <div class="stat-cell" data-aos="fade-up" data-aos-delay="80" role="listitem">
+            <div class="stat-num" style="color:var(--purple)" data-count-landing="50">0</div>
+            <div class="stat-unit">K Training Reviews</div>
+        </div>
+        <div class="stat-cell" data-aos="fade-up" data-aos-delay="160" role="listitem">
+            <div class="stat-num" style="color:var(--blue)" data-count-landing="3">0</div>
+            <div class="stat-unit">API Endpoints</div>
+        </div>
+        <div class="stat-cell" data-aos="fade-up" data-aos-delay="240" role="listitem">
+            <div class="stat-num" style="color:var(--positive)" data-count-landing="87.11">0</div>
+            <div class="stat-unit">% F1 Score</div>
+        </div>
+    </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     FEATURES
+═══════════════════════════════════════════════════════════ -->
+<section id="features" aria-label="Features">
+    <div class="lsection">
+        <div class="section-header">
+            <div class="section-tag" aria-hidden="true">✨ Capabilities</div>
+            <h2 class="section-title">Everything You Need</h2>
+            <p class="section-subtitle">A complete AI sentiment analysis platform with prediction, batch processing, analytics and model insights.</p>
+        </div>
+
+        <div class="features-grid">
+
+            <div class="feat-card" style="--feat-color:#f5c518" data-aos="fade-up" data-aos-delay="0">
+                <div class="feat-icon-wrap" aria-hidden="true">⚡</div>
+                <h3 class="feat-title">Instant Single Prediction</h3>
+                <p class="feat-desc">
+                    Analyze any movie review in real-time. Type or paste your text and get instant
+                    sentiment classification with confidence scores and a visual gauge — all in under a second.
+                </p>
+                <div class="feat-tag">POST /predict</div>
+                <a href="/ui#predict" class="btn btn-ghost btn-sm mt-3" style="padding-left:0;color:var(--yellow)">Try it → </a>
+            </div>
+
+            <div class="feat-card" style="--feat-color:#8b5cf6" data-aos="fade-up" data-aos-delay="80">
+                <div class="feat-icon-wrap" aria-hidden="true">📊</div>
+                <h3 class="feat-title">Batch Analysis</h3>
+                <p class="feat-desc">
+                    Analyze up to 50 reviews simultaneously. Add reviews manually, drag &amp; drop a
+                    <code style="font-family:var(--mono);font-size:12px;color:var(--purple)">.txt</code> or
+                    <code style="font-family:var(--mono);font-size:12px;color:var(--purple)">.csv</code> file,
+                    then export results as JSON or CSV.
+                </p>
+                <div class="feat-tag">POST /predict/batch</div>
+                <a href="/ui/batch" class="btn btn-ghost btn-sm mt-3" style="padding-left:0;color:var(--purple)">Try it → </a>
+            </div>
+
+            <div class="feat-card" style="--feat-color:#3b82f6" data-aos="fade-up" data-aos-delay="160">
+                <div class="feat-icon-wrap" aria-hidden="true">📈</div>
+                <h3 class="feat-title">Analytics Dashboard</h3>
+                <p class="feat-desc">
+                    Your full prediction history stored locally. Interactive pie charts and confidence
+                    trend graphs, animated statistics, and one-click export — all without a database.
+                </p>
+                <div class="feat-tag">LocalStorage · Chart.js</div>
+                <a href="/ui#analytics" class="btn btn-ghost btn-sm mt-3" style="padding-left:0;color:var(--blue)">View → </a>
+            </div>
+
+            <div class="feat-card" style="--feat-color:#10b981" data-aos="fade-up" data-aos-delay="240">
+                <div class="feat-icon-wrap" aria-hidden="true">🧠</div>
+                <h3 class="feat-title">Model Architecture Viewer</h3>
+                <p class="feat-desc">
+                    Explore the full Bi-LSTM architecture: Embedding → SpatialDropout → dual Bi-LSTM
+                    layers → Dense → Sigmoid output. Hover interactions, hyperparameters, and performance metrics.
+                </p>
+                <div class="feat-tag">TensorFlow · Keras</div>
+                <a href="/ui#model" class="btn btn-ghost btn-sm mt-3" style="padding-left:0;color:var(--positive)">Explore → </a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════════════════════════ -->
+<section id="how-it-works" aria-label="How It Works">
+    <div class="lsection-full" style="background:radial-gradient(ellipse 70% 50% at 50% 50%,rgba(139,92,246,.04) 0%,transparent 70%)">
+        <div style="max-width:1240px;margin:0 auto">
+            <div class="section-header">
+                <div class="section-tag" aria-hidden="true">🔄 Workflow</div>
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">Three simple steps from movie review to AI-powered sentiment insight.</p>
+            </div>
+
+            <div class="steps-grid" role="list">
+
+                <div class="step-card" data-aos="fade-up" data-aos-delay="0" role="listitem">
+                    <div class="step-num" aria-hidden="true">1</div>
+                    <h3 class="step-title">📝 Enter Your Review</h3>
+                    <p class="step-desc">
+                        Type or paste any movie review text. You can also upload a
+                        file for batch processing — up to 50 reviews at once.
+                    </p>
+                </div>
+
+                <div class="step-card" data-aos="fade-up" data-aos-delay="120" role="listitem">
+                    <div class="step-num" aria-hidden="true">2</div>
+                    <h3 class="step-title">🧠 AI Processes It</h3>
+                    <p class="step-desc">
+                        The text is cleaned, tokenized, padded, then passed through
+                        the Bidirectional LSTM model for binary sentiment classification.
+                    </p>
+                </div>
+
+                <div class="step-card" data-aos="fade-up" data-aos-delay="240" role="listitem">
+                    <div class="step-num" aria-hidden="true">3</div>
+                    <h3 class="step-title">✅ Get Instant Results</h3>
+                    <p class="step-desc">
+                        View sentiment label, confidence percentage, probability score,
+                        and an animated visual gauge — all returned in milliseconds.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     PERFORMANCE
+═══════════════════════════════════════════════════════════ -->
+<section id="performance" aria-label="Model Performance">
+    <div class="lsection">
+        <div class="metrics-showcase" data-aos="fade-up">
+            <div class="metrics-inner">
+
+                <div class="metrics-text">
+                    <p class="big-label">Model Evaluation</p>
+                    <h2>
+                        <span class="grad-yellow">86.93%</span> Test Accuracy<br/>
+                        on IMDB 50K Dataset
+                    </h2>
+                    <p>
+                        The Bi-LSTM model was trained and evaluated on a balanced dataset of
+                        50,000 IMDB movie reviews (25K positive, 25K negative) with an 80/20
+                        train-test split. Callbacks include early stopping and adaptive learning rate.
+                    </p>
+                    <a href="/ui#model" class="btn btn-secondary btn-sm">View Full Architecture →</a>
+                </div>
+
+                <div class="metrics-bars" id="perfBars">
+                    <div class="mbar-row" data-aos="fade-left" data-aos-delay="0">
+                        <span class="mbar-label">Accuracy</span>
+                        <div class="mbar-track">
+                            <div class="mbar-fill" style="background:linear-gradient(90deg,#f5c518,#fde047)" data-target="86.93"></div>
+                        </div>
+                        <span class="mbar-val" style="color:var(--yellow)">86.93%</span>
+                    </div>
+                    <div class="mbar-row" data-aos="fade-left" data-aos-delay="80">
+                        <span class="mbar-label">Precision</span>
+                        <div class="mbar-track">
+                            <div class="mbar-fill" style="background:linear-gradient(90deg,#8b5cf6,#a78bfa)" data-target="85.93"></div>
+                        </div>
+                        <span class="mbar-val" style="color:var(--purple)">85.93%</span>
+                    </div>
+                    <div class="mbar-row" data-aos="fade-left" data-aos-delay="160">
+                        <span class="mbar-label">Recall</span>
+                        <div class="mbar-track">
+                            <div class="mbar-fill" style="background:linear-gradient(90deg,#3b82f6,#60a5fa)" data-target="88.32"></div>
+                        </div>
+                        <span class="mbar-val" style="color:var(--blue)">88.32%</span>
+                    </div>
+                    <div class="mbar-row" data-aos="fade-left" data-aos-delay="240">
+                        <span class="mbar-label">F1 Score</span>
+                        <div class="mbar-track">
+                            <div class="mbar-fill" style="background:linear-gradient(90deg,#06b6d4,#22d3ee)" data-target="87.11"></div>
+                        </div>
+                        <span class="mbar-val" style="color:var(--cyan)">87.11%</span>
+                    </div>
+                    <div class="mbar-row" data-aos="fade-left" data-aos-delay="320">
+                        <span class="mbar-label">Train Size</span>
+                        <div class="mbar-track">
+                            <div class="mbar-fill" style="background:linear-gradient(90deg,#10b981,#34d399)" data-target="80"></div>
+                        </div>
+                        <span class="mbar-val" style="color:var(--positive)">40,000</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     TECH STACK
+═══════════════════════════════════════════════════════════ -->
+<section id="stack" aria-label="Technology Stack">
+    <div class="lsection">
+        <div class="section-header">
+            <div class="section-tag" aria-hidden="true">🛠 Built With</div>
+            <h2 class="section-title">Technology Stack</h2>
+            <p class="section-subtitle">Production-grade tools and frameworks powering every layer of CineAI.</p>
+        </div>
+
+        <div class="tech-grid" role="list" aria-label="Technologies used">
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="0">
+                <span aria-hidden="true">🐍</span> Python 3.10
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="40">
+                <span aria-hidden="true">⚡</span> FastAPI
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="80">
+                <span aria-hidden="true">🧠</span> TensorFlow
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="120">
+                <span aria-hidden="true">🔁</span> Bi-LSTM
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="160">
+                <span aria-hidden="true">🎯</span> Keras
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="200">
+                <span aria-hidden="true">🔢</span> NumPy
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="240">
+                <span aria-hidden="true">🐼</span> Pandas
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="280">
+                <span aria-hidden="true">📐</span> Scikit-learn
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="320">
+                <span aria-hidden="true">🌐</span> Uvicorn
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="360">
+                <span aria-hidden="true">🎨</span> Jinja2
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="400">
+                <span aria-hidden="true">📊</span> Chart.js
+            </div>
+            <div class="tech-badge" role="listitem" data-aos="fade-up" data-aos-delay="440">
+                <span aria-hidden="true">🌊</span> AOS.js
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     CTA BANNER
+═══════════════════════════════════════════════════════════ -->
+<section id="cta" aria-label="Call to Action">
+    <div class="lsection">
+        <div class="cta-banner" data-aos="scale-in">
+            <div class="section-tag" style="margin-bottom:22px" aria-hidden="true">🎬 Ready?</div>
+            <h2>
+                Start Analyzing<br/>
+                <span class="grad-ai">Movie Reviews</span>
+            </h2>
+            <p>
+                No setup required. Open the app, enter a review,
+                and get AI-powered sentiment analysis in milliseconds.
+            </p>
+            <div class="cta-btns">
+                <a href="/ui" class="btn btn-primary btn-lg btn-ripple" aria-label="Launch the CineAI app">
+                    <span aria-hidden="true">🚀</span> Launch App
+                </a>
+                <a href="/ui/batch" class="btn btn-secondary btn-lg" aria-label="Open batch prediction">
+                    <span aria-hidden="true">📊</span> Batch Predict
+                </a>
+                <a href="/docs" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">
+                    API Docs ↗
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+
+<!-- ════════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════ -->
+<footer class="footer" role="contentinfo">
+    <div class="footer-inner">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span aria-hidden="true">🎬</span>
+                    Cine<span class="logo-accent">AI</span>
+                </div>
+                <p class="footer-desc">
+                    AI-powered movie sentiment analysis built with Bidirectional LSTM deep learning.
+                    Trained on 50K IMDB reviews.
+                </p>
+            </div>
+            <div>
+                <p class="footer-links-title">Analyze</p>
+                <ul class="footer-links">
+                    <li><a href="/ui">Dashboard</a></li>
+                    <li><a href="/ui#predict">Single Review</a></li>
+                    <li><a href="/ui/batch">Batch Prediction</a></li>
+                    <li><a href="/ui#analytics">Analytics</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="footer-links-title">Docs</p>
+                <ul class="footer-links">
+                    <li><a href="/docs" target="_blank" rel="noopener">API Reference ↗</a></li>
+                    <li><a href="/ui#model">Model Architecture</a></li>
+                    <li><a href="/ui#health">API Status</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p class="footer-copy">
+                Built with <span>♥</span> using FastAPI + TensorFlow · Bi-LSTM · IMDB 50K Dataset
+            </p>
+            <div class="footer-badges">
+                <span class="foot-badge">Python 3.10</span>
+                <span class="foot-badge">TensorFlow</span>
+                <span class="foot-badge">FastAPI</span>
+                <span class="foot-badge">Bi-LSTM</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script src="{{ url_for('static', path='js/app.js') }}"></script>
+
+<script>
+/* ── Landing page extras ──────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Navbar scroll
+    const nav = document.getElementById('landingNav')
+    window.addEventListener('scroll', () => nav?.classList.toggle('scrolled', scrollY > 40), { passive:true })
+
+    // Animate stats counters on scroll into view
+    const statsObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (!e.isIntersecting) return
+            e.target.querySelectorAll('[data-count-landing]').forEach(el => {
+                const target = parseFloat(el.dataset.countLanding)
+                const isInt  = Number.isInteger(target)
+                const dur    = 1600
+                let start    = null
+                function step(ts) {
+                    if (!start) start = ts
+                    const p    = Math.min((ts - start) / dur, 1)
+                    const ease = 1 - Math.pow(1 - p, 3)
+                    el.textContent = isInt
+                        ? Math.round(ease * target)
+                        : (ease * target).toFixed(2)
+                    if (p < 1) requestAnimationFrame(step)
+                }
+                requestAnimationFrame(step)
+            })
+            statsObs.unobserve(e.target)
+        })
+    }, { threshold: .5 })
+
+    document.querySelector('.stats-row') && statsObs.observe(document.querySelector('.stats-row'))
+
+    // Animate performance bars on scroll
+    const perfObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (!e.isIntersecting) return
+            e.target.querySelectorAll('.mbar-fill[data-target]').forEach(bar => {
+                bar.style.width = bar.dataset.target + '%'
+            })
+            perfObs.unobserve(e.target)
+        })
+    }, { threshold: .3 })
+
+    const perfSection = document.getElementById('performance')
+    if (perfSection) perfObs.observe(perfSection)
+
+    // Ripple on .btn-ripple
+    document.querySelectorAll('.btn-ripple').forEach(btn => {
+        btn.addEventListener('click', e => {
+            const rect   = btn.getBoundingClientRect()
+            const ripple = document.createElement('span')
+            const size   = Math.max(rect.width, rect.height)
+            ripple.className = 'ripple'
+            ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`
+            btn.appendChild(ripple)
+            ripple.addEventListener('animationend', () => ripple.remove(), { once:true })
+        })
+    })
+
+    // Smooth anchor scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const target = document.querySelector(a.getAttribute('href'))
+            if (target) { e.preventDefault(); target.scrollIntoView({ behavior:'smooth', block:'start' }) }
+        })
+    })
+})
+</script>
+
+</body>
+</html>

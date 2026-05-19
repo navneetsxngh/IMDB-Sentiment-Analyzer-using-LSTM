@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}CineAI — Batch Prediction{% endblock %}
+
+{% block content %}
+<section id="batch-hero" style="padding:100px 24px 40px;text-align:center;position:relative">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="section-tag" aria-hidden="true">📊 Bulk Analysis</div>
+    <h1 class="section-title" style="font-size:clamp(32px,6vw,60px);letter-spacing:-2px;margin-bottom:14px">
+        Batch <span class="grad-ai">Sentiment Prediction</span>
+    </h1>
+    <p class="section-subtitle">
+        Analyze up to 50 movie reviews at once. Add manually, upload a file, or drag &amp; drop.
+    </p>
+</section>
+
+<section id="batch" aria-label="Batch Prediction" style="padding:0 24px 80px">
+    <div style="max-width:1240px;margin:0 auto">
+
+        <!-- Input Card -->
+        <div class="batch-input-card card mb-4" data-aos="fade-up">
+            <div class="batch-input-hdr">
+                <div>
+                    <h2 style="font-size:16px;font-weight:700;color:var(--text-1);margin-bottom:4px">
+                        ✍️ Enter Reviews
+                    </h2>
+                    <p style="font-size:12px;color:var(--text-3)">
+                        <span id="reviewCount">1</span> review(s) · max 50
+                    </p>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-ghost btn-sm" onclick="addRow()" aria-label="Add review field">+ Add Row</button>
+                    <button class="btn btn-ghost btn-sm" onclick="clearAllRows()" aria-label="Clear all rows">Clear All</button>
+                </div>
+            </div>
+
+            <div class="review-rows" id="reviewRows">
+                <!-- Rows injected by batch.js -->
+            </div>
+
+            <div class="batch-controls mt-4">
+                <button class="btn btn-primary btn-ripple" id="batchAnalyzeBtn" onclick="analyzeBatch()" aria-label="Analyze all reviews">
+                    <span class="btn-label">⚡ Analyze All</span>
+                    <span class="spinner spinner-sm hidden" aria-hidden="true"></span>
+                </button>
+                <button class="btn btn-purple btn-sm" onclick="fillSamples()" aria-label="Load sample reviews">🎬 Load Samples</button>
+            </div>
+        </div>
+
+        <!-- Drop Zone -->
+        <div class="drop-zone mb-4" id="dropZone" data-aos="fade-up" role="button"
+             tabindex="0" aria-label="Drop file zone for .txt or .csv files"
+             onclick="document.getElementById('fileInput').click()"
+             onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('fileInput').click()">
+            <div class="drop-icon" aria-hidden="true">📂</div>
+            <p class="drop-text">Drop a file here or <span onclick.stop.prevent>click to browse</span></p>
+            <p class="drop-hint">Supports .txt (one review per line) · .csv (review column)</p>
+            <input type="file" id="fileInput" accept=".txt,.csv" class="sr-only" onchange="handleFileUpload(event)" aria-label="Upload file"/>
+        </div>
+
+        <!-- Results Section (hidden initially) -->
+        <div id="batchResults" class="hidden" aria-live="polite">
+
+            <!-- Summary -->
+            <div class="batch-summary" id="batchSummary" data-aos="fade-up" role="group" aria-label="Batch results summary">
+                <div class="bsum-card">
+                    <div class="bsum-num" id="sumTotal"  style="color:var(--yellow)">0</div>
+                    <div class="bsum-label">Total Analyzed</div>
+                </div>
+                <div class="bsum-card">
+                    <div class="bsum-num" id="sumPos"    style="color:var(--positive)">0</div>
+                    <div class="bsum-label">Positive</div>
+                </div>
+                <div class="bsum-card">
+                    <div class="bsum-num" id="sumNeg"    style="color:var(--negative)">0</div>
+                    <div class="bsum-label">Negative</div>
+                </div>
+                <div class="bsum-card">
+                    <div class="bsum-num" id="sumAvg"    style="color:var(--blue)">—</div>
+                    <div class="bsum-label">Avg Confidence</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="analytics-charts mb-4" data-aos="fade-up">
+                <div class="chart-box">
+                    <div class="chart-hdr">
+                        <div class="chart-title">Sentiment Distribution</div>
+                        <div class="chart-sub">Positive vs Negative</div>
+                    </div>
+                    <div style="position:relative;height:240px">
+                        <canvas id="batchPieChart" aria-label="Batch sentiment distribution" role="img"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-hdr">
+                        <div class="chart-title">Confidence Scores</div>
+                        <div class="chart-sub">Per-review confidence</div>
+                    </div>
+                    <div style="position:relative;height:240px">
+                        <canvas id="batchBarChart" aria-label="Batch confidence scores" role="img"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results header with view toggle + export -->
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+                <h3 style="font-size:15px;font-weight:700;color:var(--text-1)">
+                    Results · <span id="resultCount">0</span> reviews
+                </h3>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <div class="view-toggle" role="group" aria-label="View mode">
+                        <button class="view-btn active" onclick="setView('cards')"  id="viewCards" aria-pressed="true">⊞ Cards</button>
+                        <button class="view-btn"         onclick="setView('table')" id="viewTable" aria-pressed="false">≡ Table</button>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="exportBatch('json')" aria-label="Export as JSON">⬇ JSON</button>
+                    <button class="btn btn-ghost btn-sm" onclick="exportBatch('csv')"  aria-label="Export as CSV">⬇ CSV</button>
+                </div>
+            </div>
+
+            <!-- Cards view -->
+            <div id="batchCardsView" class="batch-cards-grid" data-aos="fade-up" role="list" aria-label="Batch prediction cards"></div>
+
+            <!-- Table view (hidden by default) -->
+            <div id="batchTableView" class="batch-table-wrap hidden" data-aos="fade-up">
+                <table class="batch-table" aria-label="Batch prediction results">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Review</th>
+                            <th>Sentiment</th>
+                            <th>Confidence</th>
+                            <th>Probability</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batchTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', path='js/batch.js') }}"></script>
+{% endblock %}

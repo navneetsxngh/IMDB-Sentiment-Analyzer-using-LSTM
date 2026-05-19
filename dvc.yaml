@@ -1,0 +1,67 @@
+stages:
+
+  data_ingestion:
+    cmd: python src/stages/stage_01_data_ingestion.py
+    deps:
+      - src/stages/stage_01_data_ingestion.py
+      - src/IMDBSentimentAnalysis/components/dataingestion.py
+      - src/IMDBSentimentAnalysis/config/configuration.py
+      - config/config.yaml
+    outs:
+      - artifacts/data_ingestion/IMDB Dataset.csv
+
+  data_transformation:
+    cmd: python src/stages/stage_02_data_transformation.py
+    deps:
+      - src/stages/stage_02_data_transformation.py
+      - src/IMDBSentimentAnalysis/components/datatransformation.py
+      - src/IMDBSentimentAnalysis/config/configuration.py
+      - config/config.yaml
+      - artifacts/data_ingestion/IMDB Dataset.csv
+    params:
+      - max_words
+      - max_len
+      - test_size
+      - random_state
+    outs:
+      - artifacts/data_transformation/tokenizer.pkl
+      - artifacts/data_transformation/train.npz
+      - artifacts/data_transformation/test.npz
+
+  model_trainer:
+    cmd: python src/stages/stage_03_model_trainer.py
+    deps:
+      - src/stages/stage_03_model_trainer.py
+      - src/IMDBSentimentAnalysis/components/ModelTrainer.py
+      - src/IMDBSentimentAnalysis/config/configuration.py
+      - config/config.yaml
+      - artifacts/data_transformation/train.npz
+      - artifacts/data_transformation/test.npz
+    params:
+      - batch_size
+      - epochs
+      - embedding_dim
+      - lstm_units
+      - dropout_rate
+      - learning_rate
+    outs:
+      - artifacts/model_trainer/model.h5
+      - artifacts/model_trainer/history.pkl
+
+  model_evaluation:
+    cmd: python src/stages/stage_04_model_evaluation.py
+    deps:
+      - src/stages/stage_04_model_evaluation.py
+      - src/IMDBSentimentAnalysis/components/ModelEvaluation.py
+      - src/IMDBSentimentAnalysis/config/configuration.py
+      - config/config.yaml
+      - artifacts/model_trainer/model.h5
+      - artifacts/model_trainer/history.pkl
+      - artifacts/data_transformation/test.npz
+    metrics:
+      - artifacts/model_evaluation/report.json:
+          cache: false
+    outs:
+      - artifacts/model_evaluation/confusion_matrix.png
+      - artifacts/model_evaluation/accuracy_plot.png
+      - artifacts/model_evaluation/loss_plot.png

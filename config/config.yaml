@@ -1,0 +1,31 @@
+artifacts_root: artifacts
+
+data_ingestion:
+  root_dir: artifacts/data_ingestion
+  source_URL: https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
+  local_data_file: artifacts/data_ingestion/IMDB Dataset.csv
+  unzip_dir: artifacts/data_ingestion/
+
+
+data_transformation:
+  root_dir          : artifacts/data_transformation
+  data_path         : artifacts/data_ingestion/IMDB Dataset.csv
+  tokenizer_path    : artifacts/data_transformation/tokenizer.pkl
+  train_data_path   : artifacts/data_transformation/train.npz
+  test_data_path    : artifacts/data_transformation/test.npz
+
+model_trainer:
+  root_dir          : artifacts/model_trainer
+  model_path        : artifacts/model_trainer/model.h5
+  history_path      : artifacts/model_trainer/history.pkl
+
+
+model_evaluation:
+  root_dir              : artifacts/model_evaluation
+  model_path            : artifacts/model_trainer/model.h5
+  history_path          : artifacts/model_trainer/history.pkl
+  test_data_path        : artifacts/data_transformation/test.npz
+  report_path           : artifacts/model_evaluation/report.json
+  confusion_matrix_path : artifacts/model_evaluation/confusion_matrix.png
+  accuracy_plot_path    : artifacts/model_evaluation/accuracy_plot.png
+  loss_plot_path        : artifacts/model_evaluation/loss_plot.png

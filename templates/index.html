@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+{% block title %}CineAI — AI Movie Sentiment Analyzer{% endblock %}
+
+{% block content %}
+
+<!-- ════════════════════════════════════════════════════════
+     HERO SECTION
+═══════════════════════════════════════════════════════════ -->
+<section id="home" aria-label="Hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+
+    <div class="hero-badge anim-fade-down">
+        <span class="badge-dot" aria-hidden="true"></span>
+        Powered by Bi-LSTM Deep Learning
+    </div>
+
+    <h1 class="hero-title">
+        <span class="line-1">AI Movie Sentiment</span>
+        <span class="line-2 grad-ai">Analyzer</span>
+    </h1>
+
+    <p class="hero-subtitle">
+        Analyze movie reviews instantly using a Bidirectional LSTM model
+        trained on 50,000 IMDB reviews. Real-time · Accurate · Intelligent.
+    </p>
+
+    <div class="hero-cta">
+        <a href="#predict" class="btn btn-primary btn-lg btn-ripple">
+            <span aria-hidden="true">🎬</span> Analyze Review
+        </a>
+        <a href="/ui/batch" class="btn btn-secondary btn-lg">
+            <span aria-hidden="true">📊</span> Batch Predict
+        </a>
+        <a href="/docs" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">
+            API Docs ↗
+        </a>
+    </div>
+
+    <!-- Model metric cards -->
+    <div class="metrics-grid" role="list" aria-label="Model performance metrics">
+        <div class="metric-card" style="--m-color:#f5c518" role="listitem" data-aos="fade-up" data-aos-delay="0">
+            <div class="metric-icon" aria-hidden="true">🎯</div>
+            <span class="metric-value" data-count="86.93">0%</span>
+            <span class="metric-label">Accuracy</span>
+        </div>
+        <div class="metric-card" style="--m-color:#8b5cf6" role="listitem" data-aos="fade-up" data-aos-delay="80">
+            <div class="metric-icon" aria-hidden="true">🔬</div>
+            <span class="metric-value" data-count="85.93">0%</span>
+            <span class="metric-label">Precision</span>
+        </div>
+        <div class="metric-card" style="--m-color:#3b82f6" role="listitem" data-aos="fade-up" data-aos-delay="160">
+            <div class="metric-icon" aria-hidden="true">📡</div>
+            <span class="metric-value" data-count="88.32">0%</span>
+            <span class="metric-label">Recall</span>
+        </div>
+        <div class="metric-card" style="--m-color:#06b6d4" role="listitem" data-aos="fade-up" data-aos-delay="240">
+            <div class="metric-icon" aria-hidden="true">⚡</div>
+            <span class="metric-value" data-count="87.11">0%</span>
+            <span class="metric-label">F1 Score</span>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     HEALTH SECTION
+═══════════════════════════════════════════════════════════ -->
+<section id="health" aria-label="API Health Dashboard">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-tag" aria-hidden="true">🟢 Live Status</div>
+            <h2 class="section-title">API Health Dashboard</h2>
+            <p class="section-subtitle">Real-time monitoring of the CineAI prediction engine.</p>
+        </div>
+
+        <div class="health-grid" id="healthGrid" role="status" aria-live="polite" aria-label="Health cards">
+            <!-- Populated by app.js -->
+            <div class="hcard loading" aria-busy="true">
+                <div class="hcard-icon" aria-hidden="true">🌐</div>
+                <div class="hcard-body">
+                    <div class="hcard-label">API Status</div>
+                    <div class="hcard-value skeleton" style="height:20px;width:120px;border-radius:4px"></div>
+                </div>
+            </div>
+            <div class="hcard loading" aria-busy="true">
+                <div class="hcard-icon" aria-hidden="true">🤖</div>
+                <div class="hcard-body">
+                    <div class="hcard-label">Model</div>
+                    <div class="hcard-value skeleton" style="height:20px;width:180px;border-radius:4px"></div>
+                </div>
+            </div>
+            <div class="hcard loading" aria-busy="true">
+                <div class="hcard-icon" aria-hidden="true">📌</div>
+                <div class="hcard-body">
+                    <div class="hcard-label">Version</div>
+                    <div class="hcard-value skeleton" style="height:20px;width:80px;border-radius:4px"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="health-refresh-row mt-4">
+            <span class="refresh-hint" id="healthLastChecked" aria-live="polite">Checking…</span>
+            <button class="btn btn-ghost btn-sm" id="healthRefreshBtn" onclick="checkHealth()" aria-label="Refresh API health">
+                ↻ Refresh
+            </button>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     PREDICT SECTION
+═══════════════════════════════════════════════════════════ -->
+<section id="predict" aria-label="Single Review Prediction">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-tag" aria-hidden="true">⚡ Instant Analysis</div>
+            <h2 class="section-title">Sentiment Prediction</h2>
+            <p class="section-subtitle">Type or paste any movie review and get AI-powered sentiment analysis in under a second.</p>
+        </div>
+
+        <div class="predict-layout">
+            <!-- Left: Input -->
+            <div class="predict-input-card" data-aos="fade-right">
+                <label class="input-label" for="reviewInput">
+                    <span aria-hidden="true">✍️</span> Your Movie Review
+                </label>
+
+                <div class="textarea-wrap">
+                    <textarea
+                        id="reviewInput"
+                        class="review-ta"
+                        rows="8"
+                        maxlength="2000"
+                        placeholder="e.g. This movie was absolutely breathtaking! The cinematography was stunning and the performances were remarkable…"
+                        aria-label="Movie review text"
+                        aria-describedby="charCounter kbdHint"
+                    ></textarea>
+                </div>
+
+                <div class="textarea-meta">
+                    <span id="charCounter" class="char-count" aria-live="polite">0 / 2000</span>
+                    <span id="kbdHint" class="kbd-hint" aria-label="Keyboard shortcut">
+                        <kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">Enter</kbd> to analyze
+                    </span>
+                </div>
+
+                <div class="predict-actions">
+                    <button class="btn btn-primary btn-ripple" id="predictBtn" onclick="predict()" aria-label="Analyze sentiment">
+                        <span class="btn-label">⚡ Analyze Sentiment</span>
+                        <span class="spinner spinner-sm hidden" aria-hidden="true"></span>
+                    </button>
+                    <button class="btn btn-ghost btn-sm" onclick="clearPredict()" aria-label="Clear input">Clear</button>
+                </div>
+
+                <!-- Sample reviews -->
+                <p class="text-muted mt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:.6px">
+                    Try a sample:
+                </p>
+                <div class="sample-strip" role="group" aria-label="Sample reviews">
+                    <button class="sample-btn" onclick="fillSample(this)" data-text="This movie was absolutely breathtaking! Every scene was crafted with precision and the acting was phenomenal.">⭐ Positive</button>
+                    <button class="sample-btn" onclick="fillSample(this)" data-text="Worst film I have ever seen. Terrible acting, pointless plot, complete waste of 2 hours of my life.">💀 Negative</button>
+                    <button class="sample-btn" onclick="fillSample(this)" data-text="An average film with some good moments but ultimately forgettable. Nothing special, just okay.">😐 Mixed</button>
+                    <button class="sample-btn" onclick="randomSample()" aria-label="Load random sample">🎲 Random</button>
+                </div>
+            </div>
+
+            <!-- Right: Result -->
+            <div id="resultPanel" class="result-panel" data-aos="fade-left" aria-live="polite">
+                <div class="result-empty" role="presentation">
+                    <div class="result-empty-icon" aria-hidden="true">🎬</div>
+                    <p class="result-empty-text">Your sentiment analysis result will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     ANALYTICS SECTION
+═══════════════════════════════════════════════════════════ -->
+<section id="analytics" aria-label="Analytics Dashboard">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-tag" aria-hidden="true">📊 Insights</div>
+            <h2 class="section-title">Analytics Dashboard</h2>
+            <p class="section-subtitle">Track your prediction history and visualize sentiment trends over time.</p>
+        </div>
+
+        <!-- Stats row -->
+        <div class="analytics-top" id="analyticsStats" role="group" aria-label="Prediction statistics">
+            <div class="astat-card" data-aos="fade-up" data-aos-delay="0">
+                <div class="astat-num yellow" id="statTotal">0</div>
+                <div class="astat-desc">Total Predictions</div>
+            </div>
+            <div class="astat-card" data-aos="fade-up" data-aos-delay="80">
+                <div class="astat-num green" id="statPositive">0</div>
+                <div class="astat-desc">Positive Reviews</div>
+            </div>
+            <div class="astat-card" data-aos="fade-up" data-aos-delay="160">
+                <div class="astat-num red" id="statNegative">0</div>
+                <div class="astat-desc">Negative Reviews</div>
+            </div>
+            <div class="astat-card" data-aos="fade-up" data-aos-delay="240">
+                <div class="astat-num blue" id="statAvgConf">—</div>
+                <div class="astat-desc">Avg Confidence</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="analytics-charts" data-aos="fade-up">
+            <div class="chart-box">
+                <div class="chart-hdr">
+                    <div class="chart-title">Sentiment Distribution</div>
+                    <div class="chart-sub">Positive vs Negative ratio</div>
+                </div>
+                <div style="position:relative;height:240px">
+                    <canvas id="pieChart" aria-label="Sentiment distribution pie chart" role="img"></canvas>
+                </div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-hdr">
+                    <div class="chart-title">Confidence Trend</div>
+                    <div class="chart-sub">Last 20 predictions</div>
+                </div>
+                <div style="position:relative;height:240px">
+                    <canvas id="confChart" aria-label="Confidence trend bar chart" role="img"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- History table -->
+        <div class="hist-wrap" data-aos="fade-up">
+            <div class="hist-hdr">
+                <span class="hist-title">Prediction History</span>
+                <div class="hist-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="exportHistory('json')" aria-label="Export as JSON">⬇ JSON</button>
+                    <button class="btn btn-ghost btn-sm" onclick="exportHistory('csv')"  aria-label="Export as CSV">⬇ CSV</button>
+                    <button class="btn btn-danger btn-sm" onclick="clearHistory()" aria-label="Clear history">🗑 Clear</button>
+                </div>
+            </div>
+
+            <div id="historyTableWrap">
+                <table class="hist-table" aria-label="Prediction history">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Review</th>
+                            <th>Sentiment</th>
+                            <th>Confidence</th>
+                            <th>Probability</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon" aria-hidden="true">📋</div>
+                                    <p class="empty-state-text">No predictions yet</p>
+                                    <p class="text-muted" style="font-size:12px">Analyze a review to see history here</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     MODEL ARCHITECTURE SECTION
+═══════════════════════════════════════════════════════════ -->
+<section id="model" aria-label="Model Architecture">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-tag" aria-hidden="true">🧠 Deep Learning</div>
+            <h2 class="section-title">Model Architecture</h2>
+            <p class="section-subtitle">A stacked Bidirectional LSTM network trained on 50K IMDB reviews.</p>
+        </div>
+
+        <div class="model-layout">
+            <!-- Architecture diagram -->
+            <div data-aos="fade-right">
+                <div class="arch-diagram" role="list" aria-label="Neural network layers">
+
+                    <div class="arch-node" style="--node-color:#f5c518" role="listitem" data-aos="fade-up" data-aos-delay="0">
+                        <div class="arch-node-ico" aria-hidden="true">⬡</div>
+                        <div class="arch-node-info">
+                            <div class="arch-node-name">Embedding Layer</div>
+                            <div class="arch-node-detail">10K vocab × 128 dim · input_len=200</div>
+                        </div>
+                    </div>
+                    <div class="arch-conn" aria-hidden="true"></div>
+
+                    <div class="arch-node" style="--node-color:#8b5cf6" role="listitem" data-aos="fade-up" data-aos-delay="60">
+                        <div class="arch-node-ico" aria-hidden="true">◈</div>
+                        <div class="arch-node-info">
+                            <div class="arch-node-name">SpatialDropout1D</div>
+                            <div class="arch-node-detail">rate = 0.5</div>
+                        </div>
+                    </div>
+                    <div class="arch-conn" aria-hidden="true"></div>
+
+                    <div class="arch-node" style="--node-color:#3b82f6" role="listitem" data-aos="fade-up" data-aos-delay="120">
+                        <div class="arch-node-ico" aria-hidden="true">⟳</div>
+                        <div class="arch-node-info">
+                            <div class="arch-node-name">Bi-LSTM (64 units)</div>
+                            <div class="arch-node-detail">return_sequences=True · dropout=0.5</div>
+                        </div>
+                    </div>
+                    <div class="arch-conn" aria-hidden="true"></div>
+
+                    <div class="arch-node" style="--node-color:#06b6d4" role="listitem" data-aos="fade-up" data-aos-delay="180">
+                        <div class="arch-node-ico" aria-hidden="true">⟳</div>
+                        <div class="arch-node-info">
+                            <div class="arch-node-name">Bi-LSTM (32 units)</div>
+                            <div class="arch-node-detail">return_sequences=False · dropout=0.5</div>
+                        </div>
+                    </div>
+                    <div class="arch-conn" aria-hidden="true"></div>
+
+                    <div class="arch-node" style="--node-color:#8b5cf6" role="listitem" data-aos="fade-up" data-aos-delay="240">
+                        <div class="arch-node-ico" aria-hidden="true">◆</div>
+                        <div class="arch-node-info">
+                            <div class="arch-node-name">Dense (64)</div>
+                            <div class="arch-node-detail">activation = ReLU</div>
+                        </div>
+                    </div>
+                    <div class="arch-conn" aria-hidden="true"></div>
+
+                    <div class="arch-node" style="--node-color:#6366f1" role="listitem" data-aos="fade-up" data-aos-delay="300">
+                        <div class="arch-node-ico" aria-hidden="true">◈</div>
+                        <div class="arch-node-info">
+                            <div class="arch-node-name">Dropout</div>
+                            <div class="arch-node-detail">rate = 0.5</div>
+                        </div>
+                    </div>
+                    <div class="arch-conn" aria-hidden="true"></div>
+
+                    <div class="arch-node" style="--node-color:#10b981" role="listitem" data-aos="fade-up" data-aos-delay="360">
+                        <div class="arch-node-ico" aria-hidden="true">●</div>
+                        <div class="arch-node-info">
+                            <div class="arch-node-name">Dense (1) — Output</div>
+                            <div class="arch-node-detail">activation = Sigmoid · Binary classification</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side panel: params + performance -->
+            <div class="model-side" data-aos="fade-left">
+                <div class="model-params-card">
+                    <p class="params-title">⚙️ Hyperparameters</p>
+                    <div class="param-row"><span class="param-key">Vocab Size</span>   <span class="param-val">10,000</span></div>
+                    <div class="param-row"><span class="param-key">Sequence Len</span> <span class="param-val">200</span></div>
+                    <div class="param-row"><span class="param-key">Embedding Dim</span><span class="param-val">128</span></div>
+                    <div class="param-row"><span class="param-key">LSTM Units</span>   <span class="param-val">64 / 32</span></div>
+                    <div class="param-row"><span class="param-key">Dropout</span>      <span class="param-val">0.5</span></div>
+                    <div class="param-row"><span class="param-key">Batch Size</span>   <span class="param-val">64</span></div>
+                    <div class="param-row"><span class="param-key">Epochs</span>       <span class="param-val">10</span></div>
+                    <div class="param-row"><span class="param-key">Learning Rate</span><span class="param-val">0.001</span></div>
+                    <div class="param-row"><span class="param-key">Optimizer</span>    <span class="param-val">Adam</span></div>
+                    <div class="param-row"><span class="param-key">Loss</span>         <span class="param-val">Binary CE</span></div>
+                </div>
+
+                <div class="model-perf-card">
+                    <p class="params-title">📈 Performance</p>
+                    <div class="perf-row">
+                        <span class="perf-label">Accuracy</span>
+                        <div class="perf-bar-wrap">
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill" style="width:0%;background:linear-gradient(90deg,#f5c518,#fde047)" data-target="86.93"></div>
+                            </div>
+                        </div>
+                        <span class="perf-val">86.93%</span>
+                    </div>
+                    <div class="perf-row">
+                        <span class="perf-label">Precision</span>
+                        <div class="perf-bar-wrap">
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill" style="width:0%;background:linear-gradient(90deg,#8b5cf6,#a78bfa)" data-target="85.93"></div>
+                            </div>
+                        </div>
+                        <span class="perf-val">85.93%</span>
+                    </div>
+                    <div class="perf-row">
+                        <span class="perf-label">Recall</span>
+                        <div class="perf-bar-wrap">
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill" style="width:0%;background:linear-gradient(90deg,#3b82f6,#60a5fa)" data-target="88.32"></div>
+                            </div>
+                        </div>
+                        <span class="perf-val">88.32%</span>
+                    </div>
+                    <div class="perf-row">
+                        <span class="perf-label">F1 Score</span>
+                        <div class="perf-bar-wrap">
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill" style="width:0%;background:linear-gradient(90deg,#06b6d4,#22d3ee)" data-target="87.11"></div>
+                            </div>
+                        </div>
+                        <span class="perf-val">87.11%</span>
+                    </div>
+                </div>
+
+                <!-- Dataset info -->
+                <div class="card" style="padding:18px">
+                    <p class="params-title">📦 Dataset</p>
+                    <div class="param-row"><span class="param-key">Name</span>       <span class="param-val" style="color:var(--blue)">IMDB 50K Reviews</span></div>
+                    <div class="param-row"><span class="param-key">Total</span>      <span class="param-val">50,000</span></div>
+                    <div class="param-row"><span class="param-key">Positive</span>   <span class="param-val">25,000</span></div>
+                    <div class="param-row"><span class="param-key">Negative</span>   <span class="param-val">25,000</span></div>
+                    <div class="param-row"><span class="param-key">Train/Test</span> <span class="param-val">80% / 20%</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', path='js/predict.js') }}"></script>
+<script src="{{ url_for('static', path='js/analytics.js') }}"></script>
+{% endblock %}

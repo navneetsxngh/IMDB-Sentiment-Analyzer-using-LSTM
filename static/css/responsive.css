@@ -1,0 +1,137 @@
+/* ============================================================
+   CineAI — Responsive Styles
+   ============================================================ */
+
+/* ── Tablet (≤1024px) ────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .model-layout  { grid-template-columns: 1fr; gap: 32px }
+    .model-side    { display: grid; grid-template-columns: 1fr 1fr; gap: 18px }
+    .arch-diagram  { margin: 0 auto }
+
+    .analytics-layout { grid-template-columns: 1fr }
+    .metrics-grid { grid-template-columns: repeat(2, 1fr) }
+    .health-grid  { grid-template-columns: repeat(2, 1fr) }
+    .analytics-top{ grid-template-columns: repeat(2, 1fr) }
+    .analytics-charts { grid-template-columns: 1fr }
+
+    .footer-grid  { grid-template-columns: 1fr 1fr; gap: 28px }
+    .footer-brand { grid-column: 1 / -1 }
+}
+
+/* ── Small Tablet (≤768px) ───────────────────────────────── */
+@media (max-width: 768px) {
+    /* Navbar */
+    .nav-links {
+        position: fixed;
+        top: 66px; left: 0; right: 0;
+        background: rgba(7,7,15,.97);
+        backdrop-filter: blur(24px);
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+        transform: translateY(-110%);
+        transition: transform .35s cubic-bezier(0.4,0,0.2,1);
+        z-index: 999;
+    }
+    .nav-links.open { transform: translateY(0) }
+    .nav-links li { width: 100% }
+    .nav-link { display: block; padding: 13px 24px; border-radius: 0 }
+    .hamburger { display: flex }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px) }
+    .hamburger.active span:nth-child(2) { opacity: 0; transform: scaleX(0) }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px) }
+
+    /* Sections */
+    .section { padding: 72px 16px }
+    .section-full { padding: 72px 16px }
+    .section-title { font-size: 28px; letter-spacing: -.8px }
+    .section-subtitle { font-size: 15px }
+    .hero-title { font-size: clamp(32px, 10vw, 52px); letter-spacing: -2px }
+
+    /* Grids */
+    .predict-layout     { grid-template-columns: 1fr }
+    .health-grid        { grid-template-columns: 1fr }
+    .metrics-grid       { grid-template-columns: repeat(2, 1fr) }
+    .batch-summary      { grid-template-columns: repeat(2, 1fr) }
+    .analytics-top      { grid-template-columns: repeat(2, 1fr) }
+    .analytics-charts   { grid-template-columns: 1fr }
+    .model-layout       { grid-template-columns: 1fr }
+    .model-side         { grid-template-columns: 1fr }
+    .footer-grid        { grid-template-columns: 1fr }
+    .result-stats-row   { grid-template-columns: 1fr }
+
+    /* Batch */
+    .batch-cards-grid   { grid-template-columns: 1fr }
+
+    /* Footer */
+    .footer-bottom { flex-direction: column; align-items: flex-start }
+    .footer-badges { flex-wrap: wrap }
+
+    /* Hero CTA */
+    .hero-cta { flex-direction: column; align-items: center }
+
+    /* Predict actions */
+    .predict-actions { flex-wrap: wrap }
+    .batch-controls  { flex-wrap: wrap }
+
+    /* Toast */
+    #toast-container { left: 12px; right: 12px; width: auto; top: 74px }
+}
+
+/* ── Mobile (≤480px) ─────────────────────────────────────── */
+@media (max-width: 480px) {
+    .section { padding: 60px 14px }
+    .section-full { padding: 60px 14px }
+
+    .navbar { padding: 0 16px }
+    .health-pill .health-text { display: none }
+
+    .hero-title { letter-spacing: -1.5px }
+    .metrics-grid { grid-template-columns: 1fr 1fr; gap: 10px }
+    .metric-card { padding: 16px 12px }
+    .metric-value { font-size: 22px }
+
+    .health-grid { grid-template-columns: 1fr }
+    .hcard { padding: 18px }
+
+    .analytics-top { grid-template-columns: 1fr 1fr }
+    .astat-num { font-size: 30px }
+
+    .batch-summary { grid-template-columns: 1fr 1fr }
+
+    .predict-input-card { padding: 18px }
+    .result-card { padding: 20px }
+    .result-stats-row { grid-template-columns: 1fr 1fr }
+
+    .footer { padding: 36px 16px 24px }
+
+    .arch-node { max-width: 100% }
+
+    .hist-table th:nth-child(3),
+    .hist-table td:nth-child(3) { display: none }
+    .batch-table th:nth-child(4),
+    .batch-table td:nth-child(4) { display: none }
+
+    .view-toggle { width: 100% }
+    .view-btn { flex: 1 }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+    #particleCanvas { display: none }
+    .scanline { display: none }
+}
+
+/* ── Print ───────────────────────────────────────────────── */
+@media print {
+    #particleCanvas, .scanline, .navbar, .footer, #toast-container { display: none !important }
+    main { padding-top: 0 }
+    body { background: #fff; color: #000 }
+}

@@ -1,0 +1,27 @@
+<nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-container">
+        <a href="/ui" class="nav-logo" aria-label="CineAI Home">
+            <span class="logo-icon" aria-hidden="true">🎬</span>
+            <span>Cine<span class="logo-accent">AI</span></span>
+        </a>
+
+        <ul class="nav-links" id="navLinks" role="list">
+            <li><a href="#home"      class="nav-link active" data-section="home">Home</a></li>
+            <li><a href="#health"    class="nav-link"        data-section="health">Status</a></li>
+            <li><a href="#predict"   class="nav-link"        data-section="predict">Predict</a></li>
+            <li><a href="/ui/batch"  class="nav-link">Batch</a></li>
+            <li><a href="#analytics" class="nav-link"        data-section="analytics">Analytics</a></li>
+            <li><a href="#model"     class="nav-link"        data-section="model">Model</a></li>
+        </ul>
+
+        <div class="nav-right">
+            <div class="health-pill" id="navHealth" title="API Health Status" aria-live="polite">
+                <span class="health-dot" aria-hidden="true"></span>
+                <span class="health-text" id="navHealthText">Checking…</span>
+            </div>
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+</nav>

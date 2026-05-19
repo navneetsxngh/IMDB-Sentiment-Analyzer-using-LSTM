@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\Users\\\\singh\\\\OneDrive\\\\Desktop\\\\IMDB Projetc\" /AD /B)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\singh\\\\OneDrive\\\\Desktop\\\\IMDB Projetc\" -Recurse -Depth 5 | Where-Object { $_.FullName -notmatch '\\(__pycache__|\\\\.git|node_modules|artifacts|\\\\.eggs|dist|build\\)' } | Select-Object -ExpandProperty FullName | ForEach-Object { $_.Replace\\(\"C:\\\\Users\\\\singh\\\\OneDrive\\\\Desktop\\\\IMDB Projetc\\\\\", \"\"\\) })"
+    ]
+  }
+}

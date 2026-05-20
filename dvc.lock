@@ -98,17 +98,17 @@ stages:
         batch_size: 64
         dropout_rate: 0.5
         embedding_dim: 128
-        epochs: 5
+        epochs: 10
         learning_rate: 0.001
         lstm_units: 64
     outs:
     - path: artifacts/model_trainer/history.pkl
       hash: md5
-      md5: 5ad8241c41b17c2b9226cf96b29d4492
-      size: 321
+      md5: efa37bdd4d31ea569d986e338b129f1a
+      size: 546
     - path: artifacts/model_trainer/model.h5
       hash: md5
-      md5: a78e3f1cee8f9c2d4a91fcac243d99f4
+      md5: 5f108d065e785b8982de092e75dfb09a
       size: 17161288
   model_evaluation:
     cmd: python src/stages/stage_04_model_evaluation.py
@@ -119,11 +119,11 @@ stages:
       size: 8080490
     - path: artifacts/model_trainer/history.pkl
       hash: md5
-      md5: 5ad8241c41b17c2b9226cf96b29d4492
-      size: 321
+      md5: efa37bdd4d31ea569d986e338b129f1a
+      size: 546
     - path: artifacts/model_trainer/model.h5
       hash: md5
-      md5: a78e3f1cee8f9c2d4a91fcac243d99f4
+      md5: 5f108d065e785b8982de092e75dfb09a
       size: 17161288
     - path: config/config.yaml
       hash: md5
@@ -131,8 +131,8 @@ stages:
       size: 1344
     - path: src/IMDBSentimentAnalysis/components/ModelEvaluation.py
       hash: md5
-      md5: 0ddcba58253873b8b85138e61d43380d
-      size: 9102
+      md5: 12401eb27580902602c1580ada7db0a7
+      size: 9127
     - path: src/IMDBSentimentAnalysis/config/configuration.py
       hash: md5
       md5: 3a180fe5e5a8feb64e861d479b97a485
@@ -144,17 +144,17 @@ stages:
     outs:
     - path: artifacts/model_evaluation/accuracy_plot.png
       hash: md5
-      md5: 71baf28ca20eeaa7ae476c1ac6ff002f
-      size: 63636
+      md5: eaa57cbf42cd286b25386cc2f79e1f2c
+      size: 53760
     - path: artifacts/model_evaluation/confusion_matrix.png
       hash: md5
-      md5: 11d24270d74343917c019165531f412e
-      size: 42237
+      md5: 2b9992a57da1ae17f40d03fa934a20e8
+      size: 42405
     - path: artifacts/model_evaluation/loss_plot.png
       hash: md5
-      md5: ac410730ec5872c0b2963a7ce2e22cb9
-      size: 60765
+      md5: 140ea3114823d17352a7ed14158b7e05
+      size: 55753
     - path: artifacts/model_evaluation/report.json
       hash: md5
-      md5: b6cb9798bced64be03f0b41182f27456
+      md5: 95d7dab43ff5817896996cb3934e8b0a
       size: 101

@@ -6,41 +6,41 @@ from src.IMDBSentimentAnalysis.pipeline.predictionpipeline import PredictionStag
 from src.IMDBSentimentAnalysis.logging import logger
 
 
-# STAGE_NAME="Data Ingestion Stage"
-# try:
-#     logger.info(f">>>>>>>>Stage : {STAGE_NAME} Started <<<<<<<<<")
-#     obj = DataIngestionTrainingPipeline()
-#     obj.initiate_data_ingestion()
-#     logger.info(f">>>>>>>> Stage : {STAGE_NAME} Completed <<<<<<<<")
-# except Exception as e:
-#     logger.error(e)
-#     raise e
+STAGE_NAME="Data Ingestion Stage"
+try:
+    logger.info(f">>>>>>>>Stage : {STAGE_NAME} Started <<<<<<<<<")
+    obj = DataIngestionTrainingPipeline()
+    obj.initiate_data_ingestion()
+    logger.info(f">>>>>>>> Stage : {STAGE_NAME} Completed <<<<<<<<")
+except Exception as e:
+    logger.error(e)
+    raise e
 
 
-# STAGE_NAME = "Data Transformation Stage"
+STAGE_NAME = "Data Transformation Stage"
 
-# try:
-#     logger.info(f">>>>>> {STAGE_NAME} started <<<<<<")
-#     pipeline = DataTransformationPipeline()
-#     pipeline.run()
-#     logger.info(f">>>>>> {STAGE_NAME} completed <<<<<<\n\nx==========x")
+try:
+    logger.info(f">>>>>> {STAGE_NAME} started <<<<<<")
+    pipeline = DataTransformationPipeline()
+    pipeline.run()
+    logger.info(f">>>>>> {STAGE_NAME} completed <<<<<<\n\nx==========x")
 
-# except Exception as e:
-#     logger.exception(e)
-#     raise e
+except Exception as e:
+    logger.exception(e)
+    raise e
 
 
-# STAGE_NAME = "Model Trainer Stage"
+STAGE_NAME = "Model Trainer Stage"
 
-# try:
-#     logger.info(f">>>>>> {STAGE_NAME} started <<<<<<")
-#     pipeline = ModelTrainerPipeline()
-#     pipeline.run()
-#     logger.info(f">>>>>> {STAGE_NAME} completed <<<<<<\n\nx==========x")
+try:
+    logger.info(f">>>>>> {STAGE_NAME} started <<<<<<")
+    pipeline = ModelTrainerPipeline()
+    pipeline.run()
+    logger.info(f">>>>>> {STAGE_NAME} completed <<<<<<\n\nx==========x")
 
-# except Exception as e:
-#     logger.exception(e)
-#     raise e
+except Exception as e:
+    logger.exception(e)
+    raise e
 
 
 STAGE_NAME = "Model Evaluation Stage"

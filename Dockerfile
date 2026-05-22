@@ -2,25 +2,26 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# git is required by DVC
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+# Install git (required by some DVC/MLflow internals at runtime)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
 
+# Install dependencies first (better layer caching)
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+# Copy entire project (including local artifacts)
 COPY . .
-
 RUN pip install -e .
 
-# Pull only the two files needed for inference (skip the 66 MB dataset)
-ARG DAGSHUB_USER=navneetsxngh
-ARG DAGSHUB_TOKEN
-RUN git init && \
-    dvc remote modify origin --local user ${DAGSHUB_USER} && \
-    dvc remote modify origin --local password ${DAGSHUB_TOKEN} && \
-    dvc pull artifacts/data_transformation/tokenizer.pkl && \
-    dvc pull artifacts/model_trainer/model.h5
+# ── Runtime environment variables (override at run time via --env-file .env) ─
+# MLflow – default to local filesystem so the container starts without network auth.
+# Override with --env MLFLOW_TRACKING_URI=... if you need a remote backend.
+ENV MLFLOW_TRACKING_URI="mlruns"
+ENV MLFLOW_EXPERIMENT_NAME="IMDB_Sentiment_Analysis"
 
 EXPOSE 8080
 
+# Run uvicorn directly to avoid the dev-only reload=True flag in app.py
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]

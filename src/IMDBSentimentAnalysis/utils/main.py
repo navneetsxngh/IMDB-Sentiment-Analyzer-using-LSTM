@@ -10,22 +10,32 @@ from typing import Any
 from box.exceptions import BoxValueError
 
 import tensorflow as tf
-from tensorflow.keras.layers import Embedding
+from tensorflow.keras import layers as _kl
 from tensorflow.keras.models import load_model as _keras_load_model
 
 
-# Strips 'quantization_config' so models saved with TF 2.14+ load on any version
-class _CompatEmbedding(Embedding):
-    def __init__(self, *args, **kwargs):
-        kwargs.pop('quantization_config', None)
-        super().__init__(*args, **kwargs)
+def _compat(base):
+    """Return a subclass that silently drops 'quantization_config' from configs
+    saved by newer Keras versions, so the legacy H5 loader can reconstruct them."""
+    class _C(base):
+        def __init__(self, *args, **kwargs):
+            kwargs.pop('quantization_config', None)
+            super().__init__(*args, **kwargs)
+    _C.__name__ = base.__name__
+    return _C
+
+
+_COMPAT_OBJECTS = {
+    cls.__name__: _compat(cls)
+    for cls in [
+        _kl.Dense, _kl.Embedding, _kl.LSTM,
+        _kl.Dropout, _kl.Bidirectional,
+    ]
+}
 
 
 def load_keras_model(path):
-    return _keras_load_model(
-        str(path),
-        custom_objects={'Embedding': _CompatEmbedding}
-    )
+    return _keras_load_model(str(path), custom_objects=_COMPAT_OBJECTS)
 
 
 @ensure_annotations

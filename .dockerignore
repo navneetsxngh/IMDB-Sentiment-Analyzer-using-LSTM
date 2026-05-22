@@ -1,0 +1,14 @@
+IMDBenv/
+.git/
+.github/
+mlruns/
+mlflow.db
+logs/
+research/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.dvc/cache
+*.egg-info/
+.env

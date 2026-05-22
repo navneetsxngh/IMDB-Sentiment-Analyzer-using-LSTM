@@ -596,9 +596,74 @@ The API will be available at `http://localhost:8080`.
 
 ### With Docker
 
+#### 1. Build the image
+
 ```bash
 docker build -t imdb-sentiment .
+```
+
+> First build takes a few minutes — TensorFlow is large. Subsequent builds are fast thanks to layer caching.
+
+#### 2. Run the container
+
+```bash
+# Basic run (MLflow logs locally inside the container)
 docker run -p 8080:8080 imdb-sentiment
+
+# Pass your .env file so MLflow/Kaggle credentials are available at runtime
+docker run -p 8080:8080 --env-file .env imdb-sentiment
+
+# Run in the background (detached)
+docker run -d -p 8080:8080 --env-file .env --name imdb imdb-sentiment
+```
+
+The API is available at `http://localhost:8080` once you see:
+
+```
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080
+```
+
+#### 3. Useful container commands
+
+```bash
+# View live logs
+docker logs -f imdb
+
+# Stop the container
+docker stop imdb
+
+# Remove the container
+docker rm imdb
+
+# Remove the image
+docker rmi imdb-sentiment
+```
+
+---
+
+### Docker Hub
+
+The pre-built image is published at [`navneetsxngh/imdb`](https://hub.docker.com/r/navneetsxngh/imdb).
+
+#### Pull and run (no build required)
+
+```bash
+docker pull navneetsxngh/imdb:latest
+docker run -p 8080:8080 --env-file .env navneetsxngh/imdb:latest
+```
+
+#### Push a new version (maintainers)
+
+```bash
+# Log in to Docker Hub
+docker login -u navneetsxngh
+
+# Tag the local image
+docker tag imdb-sentiment navneetsxngh/imdb:latest
+
+# Push
+docker push navneetsxngh/imdb:latest
 ```
 
 ---
